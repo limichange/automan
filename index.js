@@ -2,25 +2,30 @@
 
 const puppeteer = require('puppeteer')
 const { getCookies } = require('./getCookies')
-const { url } = require('./config')
+const tasks = require('./tasks')
+const chalk = require('chalk')
 
-getCookies(async (cookies) => {
+index()
+
+async function index() {
   const browser = await puppeteer.launch({
     headless: false,
   })
-  const page = await browser.newPage()
 
-  for await (let c of cookies) {
+  for await (let task of tasks) {
     try {
-      await page.setCookie(c)
+      const { name, run, url } = task
+      console.log(chalk.green(name + ' start'))
+      const page = await browser.newPage()
+      await getCookies(page, url)
+      await page.goto(url)
+      await run(page)
+      await page.close()
+      console.log(chalk.green(name + ' end'))
     } catch (e) {
-      console.log(c.name)
+      console.log(chalk.red(name + ' error!'))
     }
   }
 
-  await page.goto(url)
-  await page.waitFor(1000)
-  await page.click('#Main > div.box > div:nth-child(2) > input')
-  await page.waitFor(1000)
   browser.close()
-})
+}

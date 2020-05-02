@@ -1,18 +1,28 @@
 const chrome = require('chrome-cookies-secure')
-const { url } = require('./config')
 
-exports.getCookies = (callback) => {
-  chrome.getCookies(
-    url,
-    'puppeteer',
-    function (err, cookies) {
-      if (err) {
-        console.log(err, 'error')
-        return
-      }
-      console.log(cookies[4], 'cookies')
-      callback(cookies)
-    },
-    'Default'
-  ) // e.g. 'Profile 2'
+exports.getCookies = (page, url) => {
+  return new Promise((resolve, reject) => {
+    chrome.getCookies(
+      url,
+      'puppeteer',
+      async function (err, cookies) {
+        if (err) {
+          console.log(err, 'error')
+          reject(err)
+          return
+        }
+
+        for await (let c of cookies) {
+          try {
+            await page.setCookie(c)
+          } catch (e) {
+            console.log(c.name)
+          }
+        }
+
+        resolve()
+      },
+      'Default'
+    )
+  })
 }

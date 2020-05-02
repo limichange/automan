@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const puppeteer = require('puppeteer')
 const { getCookies } = require('./getCookies')
 const { url } = require('./config')
